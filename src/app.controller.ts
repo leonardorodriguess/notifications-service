@@ -1,12 +1,26 @@
 import { Controller, Get } from '@nestjs/common';
-import { MailService } from './mail/mail.service';
+import { Body, Post } from '@nestjs/common/decorators';
+import { randomUUID } from 'crypto';
+import { CreateNotificationBody } from './create-notification-body';
+import { PrismaService } from './prisma.service';
 
-@Controller('v1')
+@Controller('notifications')
 export class AppController {
-  constructor(private readonly mailService: MailService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  @Get('hello')
-  getHello(): string {
-    return this.mailService.sendEmail();
+  @Get()
+  list() {
+    return this.prisma.notification.findMany();
+  }
+
+  @Post()
+  async create(@Body() body: CreateNotificationBody) {
+    // console.log(body);
+    await this.prisma.notification.create({
+      data: {
+        id: randomUUID(),
+        ...body,
+      },
+    });
   }
 }
